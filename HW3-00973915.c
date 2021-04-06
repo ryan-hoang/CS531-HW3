@@ -29,16 +29,20 @@ int alias_exists(struct address_t* temp, char* alias);//Check if alias is alread
 //Check if address is already present.
 int address_exists(struct address_t* temp,int first,int second, int third, int fourth);
 
+//Finds and returns a node in the BST.
+struct address_t* find(struct address_t* current, char* alias);
+
 //lookup the associated address for this alias
 int lookup(struct address_t* current, char* alias);
 void update_address(char* alias);//Change the associated address for this alias
 void delete_address(char* alias);//Delete address/alias pair from the list
 void display_aliases(int first, int second);//Show aliases that start with x.y
 void save(char* filename);//save the list to file
+void write(struct address_t* current, FILE* fp);//Helper function to traverse BST.
 int print_menu();//helper function to redisplay the menu for the user.
 void print_nodes(struct address_t* current);//display all nodes
 void removeNewline(char* str);//helper function, strips newlines from input
-void cleanup();//Frees all nodes.
+void cleanup(struct address_t* current);//Frees all nodes.
 struct address_t* insert_node(struct address_t* current,struct address_t* node);
 //==============================================================================
 
@@ -70,7 +74,7 @@ int main()
       if(!(fgets(buffer, sizeof(buffer), stdin))) //Read in first line of file.
       {
           perror("Failed to read in string. Exiting.\n");
-          cleanup();
+          cleanup(root);
           exit(-1);
       }
 
@@ -80,7 +84,7 @@ int main()
       if(!(fgets(buffer, sizeof(buffer), stdin))) //Read in first line of file.
       {
           perror("Failed to read in string. Exiting.\n");
-          cleanup();
+          cleanup(root);
           exit(-1);
       }
 
@@ -93,7 +97,7 @@ int main()
       if(!(fgets(buffer, sizeof(buffer), stdin))) //Read in first line of file.
       {
           perror("Failed to read in string. Exiting.\n");
-          cleanup();
+          cleanup(root);
           exit(-1);
       }
       memcpy(alias, buffer, sizeof(alias));
@@ -109,7 +113,7 @@ int main()
       if(!(fgets(buffer, sizeof(buffer), stdin))) //Read in first line of file.
       {
           perror("Failed to read in string. Exiting.\n");
-          cleanup();
+          cleanup(root);
           exit(-1);
       }
       memcpy(alias, buffer, sizeof(alias));
@@ -122,7 +126,7 @@ int main()
       if(!(fgets(buffer, sizeof(buffer), stdin))) //Read in first line of file.
       {
           perror("Failed to read in string. Exiting.\n");
-          cleanup();
+          cleanup(root);
           exit(-1);
       }
       memcpy(alias, buffer, sizeof(alias));
@@ -149,7 +153,7 @@ int main()
           if(!(fgets(buffer, sizeof(buffer), stdin)))
           {
               perror("Failed to read in string. Exiting.\n");
-              cleanup();
+              cleanup(root);
               exit(-1);
           }
 
@@ -170,7 +174,7 @@ int main()
       if(!(fgets(buffer, sizeof(buffer), stdin)))
       {
           perror("Failed to read in string. Exiting.\n");
-          cleanup();
+          cleanup(root);
           exit(-1);
       }
       removeNewline(buffer);
@@ -179,7 +183,7 @@ int main()
 //==============================================================================
       case 8://quit
               printf("Goodbye.\n");
-              cleanup();
+              cleanup(root);
               flag = 0;
       break;
 //==============================================================================
@@ -229,7 +233,7 @@ void read_in_data()
   if(!fp)
   {
     perror("Error while trying to read in data.");
-    cleanup();
+    cleanup(root);
     exit(-1);
   }
 
@@ -244,7 +248,7 @@ void read_in_data()
   if(!(fgets(line_buffer, sizeof(line_buffer), fp)))
   {
       perror("Failed to read in string. Exiting.\n");
-      cleanup();
+      cleanup(root);
       exit(-1);
   }
   //process first line
@@ -255,7 +259,7 @@ void read_in_data()
   if(t == NULL)
   {
     perror("Cannot allocate space for new struct exiting.");
-    cleanup();
+    cleanup(root);
     exit(-1);
   }
   t -> first = first;
@@ -275,7 +279,7 @@ void read_in_data()
     if(temp == NULL)
     {
       perror("Cannot allocate space for new struct exiting.");
-      cleanup();
+      cleanup(root);
       exit(-1);
     }
 
@@ -433,20 +437,6 @@ int address_exists(struct address_t* temp, int first, int second, int third, int
 
 int lookup(struct address_t* current, char* alias)
 {
-  /*
-  struct address_t* temp = head->next;
-
-  while(temp)
-  {
-    if(strcmp(temp->alias, alias) == 0)
-    {
-      printf("Address for %s: %d.%d.%d.%d\n", alias, temp->first, temp->second, temp->third, temp->fourth);
-      return;
-    }
-    temp = temp->next;
-  }
-  printf("%s does not exist.\n", alias);
-  */
   if(current = NULL)
   {
     return 0;
@@ -475,21 +465,43 @@ int lookup(struct address_t* current, char* alias)
 
 }
 
+struct address_t* find(struct address_t* current, char* alias)
+{
+  if(current = NULL)
+  {
+    return NULL;
+  }
+  else
+  {
+    if(strcmp(current->alias, alias) == 0)
+    {
+      printf("Update Address for %s: %d.%d.%d.%d\n", alias, current->first, current->second, current->third, current->fourth);
+      return current;
+    }
+    else
+    {
+      struct address_t* left = find(current -> left, alias);
+      struct address_t* right = find(current -> right, alias);
+      if(left != NULL)
+      {
+        return left;
+      }
+      else if(right != NULL)
+      {
+        return right;
+      }
+      else
+      {
+        return NULL;
+      }
+    }
+  }
+}
+
+
 void update_address(char* alias)
 {
-  struct address_t* temp = head->next;
-  struct address_t* edit = NULL;
-
-  while(temp)
-  {
-    if(strcmp(temp->alias, alias) == 0)
-    {
-      printf("Update Address for %s: %d.%d.%d.%d\n", alias, temp->first, temp->second, temp->third, temp->fourth);
-      edit = temp;
-    }
-    temp = temp->next;
-  }
-
+  struct address_t* edit = find(root, alias);
   if(edit == NULL)
   {
     printf("%s does not exist.\n", alias);
@@ -520,7 +532,7 @@ void update_address(char* alias)
       if(!(fgets(buffer, sizeof(buffer), stdin)))
       {
           perror("Failed to read in string. Exiting.\n");
-          cleanup();
+          cleanup(root);
           exit(-1);
       }
 
@@ -562,7 +574,7 @@ void delete_address(char* alias)
       if(!(fgets(buffer, sizeof(buffer), stdin)))
       {
           perror("Failed to read in string. Exiting.\n");
-          cleanup();
+          cleanup(root);
           exit(-1);
       }
       removeNewline(buffer);
@@ -608,6 +620,31 @@ void display_aliases(int first, int second)
   }
 }
 
+int display_helper(struct address_t* current)
+{
+  if(current == NULL)
+  {
+    return 0;
+  }
+  else
+  {
+    if(current -> first == first && current -> second == second)
+    {
+      printf("%d.%d.%d.%d %s\n", temp->first, temp->second, temp->third, temp->fourth, temp -> alias);
+    }
+    int left = display_helper(current);
+    int right = display_helper(current);
+    if(right == 1 || left == 1)
+    {
+      return 1;
+    }
+    else
+    {
+      return 0;
+    }
+  }
+}
+
 void save(char* filename)
 {
 
@@ -617,28 +654,40 @@ void save(char* filename)
   if(!fp)
   {
     perror("Could not open file.\n");
-    cleanup();
+    cleanup(root);
     exit(-1);
   }
 
-  struct address_t* temp = head->next;
-  while(temp)
-  {
-    fprintf(fp,"%d.%d.%d.%d %s\n", temp->first, temp->second, temp->third, temp->fourth, temp -> alias);
-    temp = temp->next;
-  }
+  write(root, fp);
+
   fclose(fp);
   printf("File saved. \n");
 }
 
-void cleanup()
+void write(struct address_t* current, FILE* fp)
 {
-  struct address_t* temp = head;
-
-  while(temp)
+  if(current == NULL)
   {
-    struct address_t* t = temp->next;
-    free(temp);
-    temp = t;
+    return;
+  }
+  else
+  {
+    write(current -> left, fp);
+    fprintf(fp,"%d.%d.%d.%d %s\n", current->first, current->second, current->third, current->fourth, current -> alias);
+    write(current -> left, fp);
+  }
+}
+
+void cleanup(struct address_t* current)
+{
+  if(current == NULL)
+  {
+    return;
+  }
+  else
+  {
+    cleanup(current -> left);
+    cleanup(current -> right);
+    free(current);
   }
 }
