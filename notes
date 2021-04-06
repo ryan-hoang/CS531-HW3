@@ -1,0 +1,13 @@
+read_in_data - Change way data is inserted into data structure ==========
+add_address - have to change how data is inserted  ============
+address_exists - redo ===========
+alias_exists - need to write new traversal code =========
+lookup - need to write new traversal code
+update_address - need to write new traversal code
+delete_address - change traversal code
+display_aliases - change traversal code
+save - change traversal code
+print_menu - no change
+print_nodes - change traversal code
+removeNewline - no change
+cleanup - redo
