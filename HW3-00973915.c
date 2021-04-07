@@ -35,7 +35,8 @@ struct address_t* find(struct address_t* current, char* alias);
 //lookup the associated address for this alias
 int lookup(struct address_t* current, char* alias);
 void update_address(char* alias);//Change the associated address for this alias
-void delete_address(char* alias);//Delete address/alias pair from the list
+struct address_t* delete_address(struct address_t* root, char* alias);//Delete address/alias pair from the list
+int display_helper(struct address_t* current, int first, int second);
 void display_aliases(int first, int second);//Show aliases that start with x.y
 void save(char* filename);//save the list to file
 void write(struct address_t* current, FILE* fp);//Helper function to traverse BST.
@@ -43,6 +44,7 @@ int print_menu();//helper function to redisplay the menu for the user.
 void print_nodes(struct address_t* current);//display all nodes
 void removeNewline(char* str);//helper function, strips newlines from input
 void cleanup(struct address_t* current);//Frees all nodes.
+struct address_t* minValueNode(struct address_t* node);
 struct address_t* insert_node(struct address_t* current,struct address_t* node);
 //==============================================================================
 
@@ -131,7 +133,7 @@ int main()
       }
       memcpy(alias, buffer, sizeof(alias));
       removeNewline(alias);
-      delete_address(alias);
+      root = delete_address(root,alias);
       break;
 //==============================================================================
       case 5://display list
@@ -437,7 +439,7 @@ int address_exists(struct address_t* temp, int first, int second, int third, int
 
 int lookup(struct address_t* current, char* alias)
 {
-  if(current = NULL)
+  if(current == NULL)
   {
     return 0;
   }
@@ -450,8 +452,19 @@ int lookup(struct address_t* current, char* alias)
     }
     else
     {
-      int left = lookup(current -> left, alias);
-      int right = lookup(current -> right, alias);
+      int left = 0;
+      int right = 0;
+
+      if(current -> left != NULL)
+      {
+        left = lookup(current -> left, alias);
+      }
+
+      if(current -> right != NULL)
+      {
+        right = lookup(current -> right, alias);
+      }
+
       if(left == 1 || right == 1)
       {
         return 1;
@@ -467,7 +480,7 @@ int lookup(struct address_t* current, char* alias)
 
 struct address_t* find(struct address_t* current, char* alias)
 {
-  if(current = NULL)
+  if(current == NULL)
   {
     return NULL;
   }
@@ -560,8 +573,9 @@ void update_address(char* alias)
   }
 }
 
-void delete_address(char* alias)
+struct address_t* delete_address(struct address_t* root, char* alias)
 {
+  /*
   struct address_t* temp = head;
   char buffer[20];
 
@@ -597,30 +611,86 @@ void delete_address(char* alias)
     temp = temp->next;
   }
   printf("%s does not exist.\n", alias);
+  */
+char buffer[20];
+
+  // base case
+if (root == NULL)
+{
+  return root;
+}
+// If the key to be deleted is smaller than the root's key,
+// then it lies in left subtree
+if (strcmp(alias, root -> alias) < 0)//key < root->key)
+{
+  root->left = delete_address(root->left, alias);
+}
+// If the key to be deleted is greater than the root's key,
+// then it lies in right subtree
+else if (strcmp(alias, root -> alias) > 0)//key > root->key)
+{
+  root->right = delete_address(root->right, alias);
+}
+// if key is same as root's key, then This is the node
+// to be deleted
+else
+{
+  printf("Delete %s %d.%d.%d.%d? (y/n)\n", alias, root->first, root->second, root->third, root->fourth);
+
+  if(!(fgets(buffer, sizeof(buffer), stdin)))
+  {
+      perror("Failed to read in string. Exiting.\n");
+      cleanup(root);
+      exit(-1);
+  }
+  removeNewline(buffer);
+  if(strcmp("y",buffer) == 0)
+  {
+    // node with only one child or no child
+    if (root->left == NULL)
+    {
+      struct address_t* temp = root->right;
+      free(root);
+      return temp;
+    }
+    else if (root->right == NULL)
+    {
+      struct address_t* temp = root->left;
+      free(root);
+      return temp;
+    }
+    // node with two children: Get the inorder successor (smallest
+    // in the right subtree)
+    struct address_t* temp = minValueNode(root->right);
+    // Copy the inorder successor's content to this node
+    memcpy(root-> alias, temp->alias, sizeof(root->alias));
+    // Delete the inorder successor
+    root->right = delete_address(root->right, temp->alias);
+  }
+}
+
+return root;
+}
+
+struct address_t* minValueNode(struct address_t* node)
+{
+  struct address_t* current = node;
+  while(current && current->left != NULL)
+  {
+    current = current -> left;
+  }
+  return current;
 }
 
 void display_aliases(int first, int second)
 {
-  struct address_t* temp = head->next;
-
-  int flag = 0;
-
-  while(temp)
-  {
-    if(temp -> first == first && temp -> second == second)
-    {
-      printf("%d.%d.%d.%d %s\n", temp->first, temp->second, temp->third, temp->fourth, temp -> alias);
-      flag = 1;
-    }
-    temp = temp->next;
-  }
-  if(!flag)
+  if(display_helper(root,first,second) == 0)
   {
     printf("No locations associated with %d.%d\n", first,second);
   }
 }
 
-int display_helper(struct address_t* current)
+int display_helper(struct address_t* current, int first, int second)
 {
   if(current == NULL)
   {
@@ -628,19 +698,16 @@ int display_helper(struct address_t* current)
   }
   else
   {
+    int right = display_helper(current -> right, first, second);
+    int left = display_helper(current -> left, first, second);
     if(current -> first == first && current -> second == second)
     {
-      printf("%d.%d.%d.%d %s\n", temp->first, temp->second, temp->third, temp->fourth, temp -> alias);
-    }
-    int left = display_helper(current);
-    int right = display_helper(current);
-    if(right == 1 || left == 1)
-    {
+      printf("%d.%d.%d.%d %s\n", current->first, current->second, current->third, current->fourth, current -> alias);
       return 1;
     }
     else
     {
-      return 0;
+      return right|left;
     }
   }
 }
@@ -674,7 +741,7 @@ void write(struct address_t* current, FILE* fp)
   {
     write(current -> left, fp);
     fprintf(fp,"%d.%d.%d.%d %s\n", current->first, current->second, current->third, current->fourth, current -> alias);
-    write(current -> left, fp);
+    write(current -> right, fp);
   }
 }
 
