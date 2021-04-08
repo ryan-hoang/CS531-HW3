@@ -1,9 +1,14 @@
 /*
 Ryan Hoang
+
+Assignment 3
 G00973915
+Spring 2021
 A simple program that reads a data file with addresses and associated aliases.
 Allows the user to add, lookup, update, delete, display the location of,
 and save this data to a file.
+
+Now uses a Binary Search Tree as the main data structure.
 */
 
 #include <stdio.h>
@@ -24,7 +29,9 @@ struct address_t* root = NULL;
 //==============================Prototypes======================================
 void read_in_data(); //Initialize the list of address/alias pairs
 void add_address(char* address, char* alias); //Insert an address/alias pair
-int alias_exists(struct address_t* temp, char* alias);//Check if alias is already present
+
+//Check if alias is already present
+int alias_exists(struct address_t* temp, char* alias);
 
 //Check if address is already present.
 int address_exists(struct address_t* temp,int first,int second, int third, int fourth);
@@ -35,16 +42,20 @@ struct address_t* find(struct address_t* current, char* alias);
 //lookup the associated address for this alias
 int lookup(struct address_t* current, char* alias);
 void update_address(char* alias);//Change the associated address for this alias
-struct address_t* delete_address(struct address_t* root, char* alias);//Delete address/alias pair from the list
+
+//Delete address/alias pair from the list
+struct address_t* delete_address(struct address_t* root, char* alias);
 int display_helper(struct address_t* current, int first, int second);
 void display_aliases(int first, int second);//Show aliases that start with x.y
 void save(char* filename);//save the list to file
-void write(struct address_t* current, FILE* fp);//Helper function to traverse BST.
+void write(struct address_t* current, FILE* fp);//recurse helper function
 int print_menu();//helper function to redisplay the menu for the user.
 void print_nodes(struct address_t* current);//display all nodes
 void removeNewline(char* str);//helper function, strips newlines from input
 void cleanup(struct address_t* current);//Frees all nodes.
 struct address_t* minValueNode(struct address_t* node);
+
+//Insert new node into BST data structure.
 struct address_t* insert_node(struct address_t* current,struct address_t* node);
 //==============================================================================
 
@@ -133,7 +144,27 @@ int main()
       }
       memcpy(alias, buffer, sizeof(alias));
       removeNewline(alias);
-      root = delete_address(root,alias);
+      if(alias_exists(root, alias))
+      {
+        struct address_t* temp = find(root,alias);
+        printf("Delete %s %d.%d.%d.%d? (y/n)\n", alias, temp->first, temp->second, temp->third, temp->fourth);
+
+        if(!(fgets(buffer, sizeof(buffer), stdin)))
+        {
+            perror("Failed to read in string. Exiting.\n");
+            cleanup(root);
+            exit(-1);
+        }
+        removeNewline(buffer);
+        if(strcmp("y",buffer) == 0)
+        {
+          root = delete_address(root,alias);
+        }
+      }
+      else
+      {
+        printf("%s does not exist.", alias);
+      }
       break;
 //==============================================================================
       case 5://display list
@@ -488,7 +519,6 @@ struct address_t* find(struct address_t* current, char* alias)
   {
     if(strcmp(current->alias, alias) == 0)
     {
-      printf("Update Address for %s: %d.%d.%d.%d\n", alias, current->first, current->second, current->third, current->fourth);
       return current;
     }
     else
@@ -520,6 +550,7 @@ void update_address(char* alias)
     printf("%s does not exist.\n", alias);
     return;
   }
+  printf("Update Address for %s: %d.%d.%d.%d\n", alias, edit->first, edit->second, edit->third, edit->fourth);
 
   char buffer[20];
   int first = -1;
@@ -575,76 +606,28 @@ void update_address(char* alias)
 
 struct address_t* delete_address(struct address_t* root, char* alias)
 {
-  /*
-  struct address_t* temp = head;
   char buffer[20];
 
-  while(temp -> next)
+    // base case
+  if (root == NULL)
   {
-    if(strcmp(temp -> next -> alias, alias) == 0)
-    {
-      printf("Delete %s %d.%d.%d.%d? (y/n)\n", alias, temp->next->first, temp->next->second, temp->next->third, temp->next->fourth);
-
-      if(!(fgets(buffer, sizeof(buffer), stdin)))
-      {
-          perror("Failed to read in string. Exiting.\n");
-          cleanup(root);
-          exit(-1);
-      }
-      removeNewline(buffer);
-      if(strcmp("y",buffer) == 0)
-      {
-        struct address_t* t = temp->next;
-        if(temp -> next -> next == NULL)
-        {
-          temp -> next = NULL;
-        }
-        else
-        {
-          temp -> next = temp -> next -> next;
-        }
-        free(t);
-        printf("%s deleted.\n", alias);
-        return;
-      }
-    }
-    temp = temp->next;
+    return root;
   }
-  printf("%s does not exist.\n", alias);
-  */
-char buffer[20];
-
-  // base case
-if (root == NULL)
-{
-  return root;
-}
-// If the key to be deleted is smaller than the root's key,
-// then it lies in left subtree
-if (strcmp(alias, root -> alias) < 0)//key < root->key)
-{
-  root->left = delete_address(root->left, alias);
-}
-// If the key to be deleted is greater than the root's key,
-// then it lies in right subtree
-else if (strcmp(alias, root -> alias) > 0)//key > root->key)
-{
-  root->right = delete_address(root->right, alias);
-}
-// if key is same as root's key, then This is the node
-// to be deleted
-else
-{
-  printf("Delete %s %d.%d.%d.%d? (y/n)\n", alias, root->first, root->second, root->third, root->fourth);
-
-  if(!(fgets(buffer, sizeof(buffer), stdin)))
+  // If the key to be deleted is smaller than the root's key,
+  // then it lies in left subtree
+  if (strcmp(alias, root -> alias) < 0)//key < root->key)
   {
-      perror("Failed to read in string. Exiting.\n");
-      cleanup(root);
-      exit(-1);
+    root->left = delete_address(root->left, alias);
   }
-  removeNewline(buffer);
-  if(strcmp("y",buffer) == 0)
+  // If the key to be deleted is greater than the root's key,
+  // then it lies in right subtree
+  else if (strcmp(alias, root -> alias) > 0)//key > root->key)
+  {
+    root->right = delete_address(root->right, alias);
+  }
+  // if key is same as root's key, then This is the node
+  // to be deleted
+  else if(strcmp(alias, root -> alias) == 0)
   {
     // node with only one child or no child
     if (root->left == NULL)
@@ -667,9 +650,8 @@ else
     // Delete the inorder successor
     root->right = delete_address(root->right, temp->alias);
   }
-}
 
-return root;
+  return root;
 }
 
 struct address_t* minValueNode(struct address_t* node)
