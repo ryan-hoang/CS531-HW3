@@ -21,7 +21,7 @@ ryan@Stormbreaker:/mnt/c/Users/rhoan/Documents/Bash/CS531-HW3$ ./HW3
 
 Please enter a number 1-8 to make a selection. 
 
-Enter option: 5 \
+Enter option: 5 
 
 131.250.47.63 baker \
 111.22.5.66 green \
