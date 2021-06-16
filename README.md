@@ -8,7 +8,7 @@ and save this data to a file. \
 Utilizes a Binary Search Tree as the main data structure.
 
 Example Run: \
-ryan@Stormbreaker:/mnt/c/Users/rhoan/Documents/Bash/CS531-HW3$ ./HW3 \
+ryan@Stormbreaker:/mnt/c/Users/rhoan/Documents/Bash/CS531-HW3$ ./HW3 
 
 1) Add address 
 2) Lookup address 
