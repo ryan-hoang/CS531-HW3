@@ -10,16 +10,16 @@ Utilizes a Binary Search Tree as the main data structure.
 Example Run: \
 ryan@Stormbreaker:/mnt/c/Users/rhoan/Documents/Bash/CS531-HW3$ ./HW3 \
 
-1) Add address \
-2) Lookup address \
-3) Update address \
-4) Delete address \
-5) Display list \
-6) Display aliases for function \
-7) Save to file \
-8) Quit \
+1) Add address 
+2) Lookup address 
+3) Update address 
+4) Delete address 
+5) Display list 
+6) Display aliases for function 
+7) Save to file 
+8) Quit 
 Please enter a number 1-8 to make a selection. \
-\ 
+\\
 Enter option: 5 \
 131.250.47.63 baker \
 111.22.5.66 green \
