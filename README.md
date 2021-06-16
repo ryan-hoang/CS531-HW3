@@ -19,7 +19,7 @@ ryan@Stormbreaker:/mnt/c/Users/rhoan/Documents/Bash/CS531-HW3$ ./HW3
 7) Save to file 
 8) Quit 
 Please enter a number 1-8 to make a selection. \
-\\
+
 Enter option: 5 \
 131.250.47.63 baker \
 111.22.5.66 green \
@@ -27,4 +27,4 @@ Enter option: 5 \
 83.123.150.205 opal \
 111.223.3.44 platte \
 172.66.7.88 wabash \
-172.66.7.89 wabash2 \
+172.66.7.89 wabash2 
