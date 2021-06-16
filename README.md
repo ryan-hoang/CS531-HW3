@@ -18,7 +18,8 @@ ryan@Stormbreaker:/mnt/c/Users/rhoan/Documents/Bash/CS531-HW3$ ./HW3
 6) Display aliases for function 
 7) Save to file 
 8) Quit 
-Please enter a number 1-8 to make a selection. \
+
+Please enter a number 1-8 to make a selection. 
 
 Enter option: 5 \
 131.250.47.63 baker \
